@@ -40,7 +40,7 @@ sudo cp -v ~/.local/share/fonts/*              backup/.local/share/fonts
 
 sudo cp -v ~/.zshenv                           backup/.zshenv
 
-sudo cp -rv ~/.ssh                             backup/.ssh
+#sudo cp -rv ~/.ssh                             backup/.ssh
 
 sudo cp -v ~/.inputrc                          backup/.inputrc
 
