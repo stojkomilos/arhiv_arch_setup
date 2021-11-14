@@ -1,0 +1,78 @@
+* Nov nov
+
+emacs client confirm save on closing
+
+* Nov plan
+
+vim config install
+brave install
+fonts install
+polybar fonts mixing
+wlsunset
+brave config
+
+
+* Plan
+
+1. skripta, backup: tek kada dodam jos dosta toga (novi sistem (ne diraj stari!!!, dodaj treci))
+    1. radi sve od juce
+    2. sync da radi
+    3. cron da radi
+    2. vim da radi
+    3. bluetooth da radi
+    4. da radi paru n stuff
+    5. vim da radi u install script     - posle novog install-a
+    6. spellcheck
+
+emacs:
+ * note, helm fzf ripgrep...
+ * optimizacija
+
+* Prio 1
+
+naci bolji shorcut sa dropdown terminal
+
+* Prio 2
+
+Emacs:
+  - Optimizacija, daemon?
+  - Spellcheck 
+  - Da radi bez latex
+  - spell check koji radi za sve reci u fajlu, a ne samo one na koje hoverujem
+
+Clean skripta:
+ - sway
+ - nvim
+ - waybar, waybar css
+ - uklniti .config/nvim/.net...
+
+system monitor
+
+sway:
+ - dmenu, floating window, floating calculator
+
+sync na paljenju i gasenju (poweroff i restart?)
+
+Brave native
+
+* Prio 3
+
+
+locate, find itd...
+
+Ukloniti .zshcompdump nekako
+
+waybar:
+ - fonts
+ - workspaces
+ - wlsunset applet (da znam kad je ukljuceno)
+ - luke_info.sh (u fedora_setup)
+
+stavi da je qr kod floating (win+q <=> to-barcode)
+
+Install script
+ - Passwd install
+ - Driver install
+ - Texlive
+
+ default new window da pali desno, a ne dole (split whatever)

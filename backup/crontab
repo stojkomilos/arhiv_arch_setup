@@ -1,0 +1,11 @@
+# NOTE: you need "source ~/.zshenv && " before your command to export environment variables to the cron job and the tasks that it runs
+
+# Minute (0-59)
+#        Hour (0-23)
+#             Day of Month (1-31)
+#                  Month (1-12 or Jan-Dec)
+#                       Day of Week (0-6 or Sun-Sat)
+#                           Command
+  */5    *    *    *    *   source ~/.zshenv && cloud sync >> ~/.backup_sync/sync_log.txt 2>&1
+  0      */6 *    *    *   source ~/.zshenv && backup-sync >> ~/.backup_sync/backup_sync_log.txt
+

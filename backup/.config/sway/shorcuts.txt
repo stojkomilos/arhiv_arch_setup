@@ -1,0 +1,47 @@
+Win + h/j/k/l 				focus left/down/up/right
+Win + Ctrl + h/j/k/l	Move worksspace to output left/down/up/right
+
+Win + Enter						terminal(alacritty)
+Alt + F4							kill window
+Win + Shift + q 			kill window #TODO napravidi neki bolji
+Win + t								Split toggle
+Win + Shift + Space 	Floating toggle
+Win + Space						Mode_toggle
+Win + p								winresize
+Win + Alt + o					sticky toggle
+Win + g 							Workspace prev
+
+Win + f								Fullscreen toggle
+Win + e								Lock screen(i3lock)(not really safe, if you try really hard, you can bypass it)
+
+Win + Alt + h/j/k/l		Move left/down/up/right 30
+Win + r								Restart i3(do it if you changed the config file for i3)
+
+
+Win + Home						Workspace #1
+Win + Alt + Home 			Move window to workspace 1
+Win + m								Previous workspace
+Win + ,								Next workspace
+Win + /								Back_and_forth workspace
+Win + Alt + m 				Move window to previous workspace
+Win + Alt + , 				Move window to next workspace
+
+Win + 1/2/3..9				Workspace #1/2/3..9
+Win + Alt + 1/2/3..9	Move window to workspace #1/2/3..9
+Win + End 						Workspace #9
+Win + Alt + End 			Move window to workspace 9
+
+Win + Alt + t 				Set inner and outer gaps to default
+Win + Alt + d					Set inner and outer gaps to 0
+Win + s								Inner gaps + 5
+Win + Alt + s 				Inner gaps - 5
+Win + z								Outer gaps + 5
+Win + Alt + z					Outer gaps - 5
+
+
+
+Win + W								Web browser
+Win + a 							Dropdowncalc
+
+todo?: promeniti resize da isto bude na hjkl, staviti I na inner gaps O outter gaps
+todo: htop shortcut

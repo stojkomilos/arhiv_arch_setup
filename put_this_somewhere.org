@@ -1,0 +1,5 @@
+## Google drive sync
+* I'm using rclone. For the bidiectional sync i use an "addon" for rclone: [rclonesync-V2](https://github.com/cjnaz/rclonesync-V2/issues/68).
+
+## Notes:
+* If dual booting with Windows 10, time may be out of sync. See: <https://wiki.archlinux.org/title/Dual_boot_with_Windows#Time_standard>

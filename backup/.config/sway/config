@@ -1,0 +1,219 @@
+# Man page help:
+# man 5 sway
+# searchuj: smart, CRTIERIA, inverse_outer
+
+#TODO: pogledaj u man 5 sway, posle namestanj workspace-ova(otprilike)          focus_wrapping workspace
+
+# Fix bug for GTK+ application taking 20 seconds to start (namely, waybar) (https://github.com/swaywm/sway/wiki)
+exec systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK
+exec hash dbus-update-activation-environment 2>/dev/null && dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK
+
+set $mod Mod4
+set $alt Mod1
+set $terminal alacritty
+set $browser brave
+set $file_browser pcmanfm
+font pango:SFNS Display:style=Regular
+
+#bindsym $mod+d move container to scratchpad
+
+# Personal
+# Monitor setup Puts my 2 monitors in correct order, correct resolution and refresh rate
+output DVI-D-1 pos 0 0 res 1920x1080@60Hz
+output HDMI-A-1 pos 1920 0 res 1920x1080@74.986Hz
+
+# Personal
+# Puts the starting workspaces on each monitor
+workspace 1 output HDMI-A-1
+workspace 2 output DVI-D-1
+
+# Toggle wlsunset (b = bluelight)
+bindsym $mod+b exec ~/.scripts/toggle-wlsunset
+
+floating_modifier $mod normal
+
+# Screenshot whole screen (first part of command saves the screenshot, second part of the commands saves it to system clipboard)
+bindsym Print exec ~/.scripts/take-screenshot
+# Screenshot selection (shorcut like in Windows 10)(first part of command saves the screenshot, second part of the commands saves it to system clipboard)
+bindsym $mod+Shift+s exec ~/.scripts/take-screenshot snip
+
+bar {
+     swaybar_command waybar
+}
+
+exec emacs --daemon
+
+exec_always ~/.scripts/sway/ensure_dropdown_terminal.sh dropdown_terminal
+for_window [title="dropdown_*"] floating enable
+for_window [title="dropdown_terminal"] resize set width 1000 px height 400 px
+#for_window [title="dropdown_terminal"] opacity 1
+for_window [title="dropdown_*"] move position center
+for_window [title="dropdown_*"] move container to scratchpad
+for_window [title="dropdown_*"] sticky enable
+for_window [title="dropdown_*"] border pixel 1
+bindsym $mod+d scratchpad show
+
+
+#for_window [title="dropdown_*"] scratchpad show
+
+# Change window focus (vim-like)
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+# Move focused window(vim-like)
+bindsym $mod+Ctrl+h move left 30
+bindsym $mod+Ctrl+j move down 30
+bindsym $mod+Ctrl+k move up 30
+bindsym $mod+Ctrl+l move right 30
+
+# Opens terminal emulator
+bindsym $mod+Return exec $terminal
+
+# Kills the currently focused window
+bindsym $mod+$alt+d kill
+
+# Window border (1 pixel is more aesthetic but less practical)
+default_border pixel 2
+
+# Disable mouse acceleration
+input * accel_profile flat
+
+# Keyboard settings
+input "type:keyboard" {
+     repeat_rate 25
+     repeat_delay 250
+
+     # "caps:swapescape" - Swaps caps lock and escape keys
+     # grp:alt_shift_toggle - Change keybaord language input with Alt + Shift
+     # Note: to trigger several options, you need to list them separated with a comma
+     
+     xkb_options "caps:swapescape",grp:alt_shift_toggle
+     #xkb_options "caps:swapescape"
+     #xkb_layout us,rs
+     xkb_layout us,hr,rs
+}
+
+# Toggles in which orientation a new window will open(horizontal/vertical)
+bindsym $mod+s split toggle
+
+# Very usefull. Super/Windows key toggles application launcher. Windows 10 like
+bindcode --release 133 exec ~/.scripts/sway/toggle_application_launcher.sh application_launcher
+
+# Enable window settings for application launcher window called EXCATLY "application_launcher"
+for_window [title="^application_launcher$"] floating enable, border none, opacity 0.8, move position center, resize set 800 300
+for_window [app_id="zenity"] floating enable, border none, move position center, resize set 800 300
+
+# Resize currently focused window (vim-like)
+bindsym $mod+$alt+h resize shrink width  10px
+bindsym $mod+$alt+j resize grow   height 10px
+bindsym $mod+$alt+k resize shrink height 10px
+bindsym $mod+$alt+l resize grow   width  10px
+
+#TODO, bolji key bindingi za ovo, mozda ukloniti jedan od ovih, i videti kako ovo za split radi, da li moze da primi child opet
+bindsym $mod+y layout stacking
+bindsym $mod+u layout tabbed
+bindsym $mod+p toggle split
+
+# Toggles currenty focused window floating/stacking
+bindsym $mod+$alt+space floating toggle
+
+# Toggles selection mode
+bindsym $mod+space focus mode_toggle
+
+# Opens the preffered web browser
+bindsym $mod+w exec $browser
+
+# Opens the preffered file browser
+bindsym $mod+e exec $file_browser
+
+# Restarts sway, use after changing (and saving) the config file for i3
+bindsym $mod+r reload
+
+# Wallpaper
+output "*" bg ~/Pictures/wallpaper/wallpaper fill
+
+# Lock the screen
+# NOTE: this is not 100% secure, it can be bypassed if you try
+# NOTE: no encryption is used
+bindsym $mod+x exec ~/.scripts/sway/swaylock.sh
+
+# Makes the currently focused window fullscreen
+bindsym $mod+f fullscreen toggle
+
+# Puts currently copied stuff into a QR code (q = Qr code)
+bindsym $mod+q exec to-barcode
+
+#TODO, does not hover where it should
+#bindsym $mod+Shift+b	floating toggle; sticky toggle; exec hover left
+bindsym $mod+Shift+n	floating toggle; sticky toggle; exec hover right
+
+# TODO ----------------------------------------
+bindsym $mod+o sticky toggle
+bindsym $mod+g workspace prev
+
+bindsym $mod+Shift+h          move workspace to output left
+bindsym $mod+Shift+j          move workspace to output down
+bindsym $mod+Shift+k          move workspace to output up
+bindsym $mod+Shift+l          move workspace to output right
+
+bindsym $mod+m workspace prev
+bindsym $mod+comma workspace next
+bindsym $mod+slash workspace back_and_forth
+
+bindsym $mod+$alt+m	move container to workspace prev
+bindsym $mod+$alt+comma move container to workspace next
+# --------------------------------------------
+
+# switch to workspace
+bindsym $mod+1 workspace number 1
+bindsym $mod+2 workspace number 2
+bindsym $mod+3 workspace number 3
+bindsym $mod+4 workspace number 4
+bindsym $mod+5 workspace number 5
+bindsym $mod+6 workspace number 6
+bindsym $mod+7 workspace number 7
+bindsym $mod+8 workspace number 8
+bindsym $mod+9 workspace number 9
+
+# Move focused container to workspace (TODO: proveri da li radi ovo uopste)
+bindsym $mod+$alt+1 move container to workspace number 1
+bindsym $mod+$alt+2 move container to workspace number 2
+bindsym $mod+$alt+3 move container to workspace number 3
+bindsym $mod+$alt+4 move container to workspace number 4
+bindsym $mod+$alt+5 move container to workspace number 5
+bindsym $mod+$alt+6 move container to workspace number 6
+bindsym $mod+$alt+7 move container to workspace number 7
+bindsym $mod+$alt+8 move container to workspace number 8
+bindsym $mod+$alt+9 move container to workspace number 9
+
+set $mute_mic pactl set-source-mute @DEFAULT_SOURCE@ toggle
+bindsym $mod+Shift+m $mute_mic_and_sound $mute_mic
+
+set $mute_mic_and_sound exec pactl set-source-mute @DEFAULT_SOURCE@ toggle ; exec pactl set-sink-mute 0 1
+bindsym $mod+Shift+Delete $mute_mic_and_sound ; workspace $ws9 ; exec $terminal -e htop ; exec $file_browser
+
+#------------------------------------------------------------------------------------------------
+
+
+# Window borders and stuff------------------------------------------------------------------------
+# Active window border color (the color is taken from fedora 2021 logo)
+set $active-bg-color             #3c6eb4ff
+# Inactive window border color
+set $inactive-bg-color           #2f343f
+set $text-color                  #888888
+set $inactive-text-color         #888888
+set $urgent-bg-color             #ff0000
+# Indicator on active window color (indicator is used for showing where a new widnow will spawn) (green option: #3caa34cc)
+set $indicator-active-color      #aaaa34cc
+# Indicator on inactive window color (indicator is used for showing where a new widnow will spawn)(in this case the color is the same as if there was not indicator)
+set $indicator-inactive-color    #2f343f
+
+# window colors
+#                       border              background         text                 indicator
+client.focused          $active-bg-color    $active-bg-color   $text-color          $indicator-active-color
+client.unfocused        $inactive-bg-color  $inactive-bg-color $inactive-text-color $indicator-inactive-color
+client.focused_inactive $inactive-bg-color  $inactive-bg-color $inactive-text-color $indicator-inactive-color
+client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color          $indicator-inactive-color
+#------------------------------------------------------------------------------------------------------------

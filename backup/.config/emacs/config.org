@@ -1,0 +1,905 @@
+#+TITLE: Emacs config.org
+#+STARTUP: fold
+#+STARTUP: latexpreview
+
+* Configure =use-package=
+
+I use =use-package= to install and configure my packages. My =init.el= includes the
+initial setup for =package.el= and ensures that =use-package= is installed, since I
+wanna do that right away.
+
+This makes sure that =use-package= will install the package if it's not already
+available. It also means that I should be able to open Emacs for the first time
+on a fresh Debian box and have my whole environment automatically installed. I'm
+not /totally/ sure about that, but we're gettin' close.
+
+#+begin_src emacs-lisp
+  (require 'use-package-ensure)
+  (setq use-package-always-ensure t)
+#+end_src
+
+Always compile packages, and use the newest version available.
+
+#+begin_src emacs-lisp
+  (use-package auto-compile
+    :config (auto-compile-on-load-mode))
+
+  (setq load-prefer-newer t)
+#+end_src
+
+Disable TLS 1.3; ELPA has higher standards. That'll be the default in Emacs
+26.3, I think, but I'm not there yet.
+
+#+begin_src emacs-lisp
+  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+#+end_src
+
+Disable deprecation warnings about =cl=. The =cl= library has been deprecated, but
+lots of packages still use it. I can't control that, but I can disable the
+warnings.
+
+#+begin_src emacs-lisp
+  (setq byte-compile-warnings '(cl-functions))
+#+end_src
+
+* Minor settings
+** Save my location within a file
+
+Using =save-place-mode= saves the location of point for every file I visit. If I
+close the file or close the editor, then later re-open it, point will be at the
+last place I visited.
+
+#+begin_src emacs-lisp
+  (save-place-mode t)
+#+end_src
+
+** Always indent with spaces
+
+Never use tabs. Tabs are the devil’s whitespace.
+
+#+begin_src emacs-lisp
+  (setq-default indent-tabs-mode nil)
+#+end_src
+
+** Other stuff
+
+#+begin_src emacs-lisp
+  ; Changes the "yes or no" promtps to "y or n"
+  (defalias 'yes-or-no-p 'y-or-n-p)
+
+
+  ; disable autosave and automatic creation of backup files
+  (setq make-backup-files nil)
+  (setq auto-save-default nil)
+
+  ; Makes scrolling sane
+  (setq scroll-conservatively 100)
+#+end_src
+
+** disable backup file
+#+begin_src emacs-lisp
+  (setq make-backup-files nil)
+#+end_src
+* Evil mode
+
+** a
+
+Download and enable evil.
+
+#+begin_src emacs-lisp
+  (use-package evil
+    :ensure t
+    ;:defer .1 ;; don't block emacs when starting, load evil immediately after startup
+    :init
+    (setq evil-want-integration t) ;; This is on by default
+    (setq evil-want-keybinding nil) ; For evil-complete
+    :config
+    (evil-mode 1)
+    (message "Loading evil-mode...done"))
+#+end_src
+
+Install =evil-collection=, which provides evil-friendly bindings for many modes.
+
+#+begin_src OFF
+  (use-package evil-collection
+    :after evil
+    :ensure t
+    :config
+    :custom (evil-collection-setup-minibuffer t)
+    :custom (evil-collection-calendar-want-org-bindings t)
+    (setq evil-collection-mode-list
+          '(which-key))
+    (evil-collection-init))
+#+end_src
+
+Enable =surround= everywhere.
+
+#+begin_src emacs-lisp
+  (use-package evil-surround
+    :config
+    (global-evil-surround-mode 1))
+#+end_src
+
+
+Evil-org
+- Indent with =M-h/j/k/l=
+- Indent with => or <=
+- Manipulate tables with =M-h/j/k/l=
+- gj, move between headers (or source blocks, or whatever)
+- vim text object "ae", (ae=an element)
+
+#+begin_src OFF
+  (use-package evil-org
+    :ensure t
+    :after org
+    :hook (org-mode . (lambda () evil-org-mode))
+    :config
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys))
+#+end_src
+
+Evil stuff.
+TODO: visual g$ i g^ kada je visaul line mode ukljucen, ovo moze samo da se uradi tako sto ukljucim sve te visual shitove kad skontam da je file org mode
+
+#+begin_src emacs-lisp
+
+  ; Treat Wrapped line scrolling as single lines
+  (define-key evil-normal-state-map (kbd "j") 'evil-next-visual-line)
+  (define-key evil-normal-state-map (kbd "k") 'evil-previous-visual-line)
+
+  ; (TODO: not working, also don't know if i need everything(for things like using caps for escape AND ctrl)) esc quits pretty much anything (like pending prompts in the minibuffer)
+  ;(define-key evil-normal-state-map [escape] 'keyboard-quit)
+  ;(define-key evil-visual-state-map [escape] 'keyboard-quit)
+  ;(define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
+  ;(define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
+  ;(define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
+  ;(define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
+  ;(define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
+
+#+end_src
+
+
+** custom bindings from vim
+
+#+begin_src emacs-lisp
+  (define-key evil-normal-state-map (kbd "SPC") 'evil-toggle-fold)
+  (define-key evil-normal-state-map (kbd "S") (kbd ":%s//g"))
+  ;(define-key evil-normal-state-map (kbd "<Space>") (kbd "za"))
+  ;(global-set-key (kbd "C-c C-r") 'ivy-resume)
+#+end_src
+
+* Org mode
+** General settings
+
+Don't indent newly expanded blocks, even if they're under a heading.
+
+#+begin_src emacs-lisp
+  (setq org-adapt-indentation nil)
+#+end_src
+
+Sets scratch buffer to org mode:
+#+begin_src emacs-lisp
+    (setq initial-major-mode 'org-mode)
+#+end_src
+
+** Display preferences
+
+Enable =visual-line-mode= in all *org* files.
+
+#+begin_src emacs-lisp
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (visual-line-mode t))
+            t)
+
+  ;(with-eval-after-load 'org       
+  ;  (add-hook 'org-mode-hook #'visual-line-mode))
+#+end_src
+
+For shortened headers: shows "⤵" instead of "...".
+
+#+begin_src emacs-lisp
+  (setq org-ellipsis "⤵")
+#+end_src
+
+Hide slashes and stars that show /italic/ and *bold*.
+
+#+begin_src OFF
+  (setq org-hide-emphasis-markers t)
+#+end_src
+
+Use syntax highlighting in source blocks while editing.
+
+#+begin_src emacs-lisp
+  (setq org-src-fontify-natively t)
+#+end_src
+
+Pretty bullets instead of asterisks for headlines.
+"Better" alternative to org-bullets is org-superstar ([[https://www.youtube.com/watch?v=gsbw8CQGrM8][watch from 7:00]])
+#+begin_src emacs-lisp
+  (use-package org-bullets
+    :ensure t
+    :config
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+  ;(use-package org-bullets
+  ;   :ensure t
+  ;   :init (add-hook 'org-mode-hook 'org-bullets-mode))
+#+end_src
+
+#+begin_src emacs-lisp
+;  (use-package org
+;    :init
+;    (font-lock-add-keywords 'org-mode
+;     '(("^ +\\([-*]\\) "
+;            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•")))))))
+#+end_src
+
+When editing a code snippet, use the current window rather than popping open a
+new one (which shows the same information).
+
+#+begin_src OFF
+  (setq org-src-window-setup 'current-window)
+#+end_src
+
+
+Navodno bullets na plain-listama umesto crtica i zvezdica (NE RADI, ZATO JE OFF, TODO)
+
+#+begin_src OFF
+    (font-lock-add-keywords 'org-mode
+                              '(("^ *\\([-]\\) "
+                                 (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+#+end_src
+   
+
+Bolji naslovi, bez boja, veci su (namesti na svoje, do tad je OFF, TODO)
+
+#+begin_src OFF
+  (let* ((variable-tuple (cond ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
+                                 ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
+                                 ((x-list-fonts "Verdana")         '(:font "Verdana"))
+                                 ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
+                                 (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
+           (base-font-color     (face-foreground 'default nil 'default))
+           (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
+  
+      (custom-theme-set-faces 'user
+                              `(org-level-8 ((t (,@headline ,@variable-tuple))))
+                              `(org-level-7 ((t (,@headline ,@variable-tuple))))
+                              `(org-level-6 ((t (,@headline ,@variable-tuple))))
+                              `(org-level-5 ((t (,@headline ,@variable-tuple))))
+                              `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.1))))
+                              `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.25))))
+                              `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.5))))
+                              `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
+                              `(org-document-title ((t (,@headline ,@variable-tuple :height 1.5 :underline nil))))))
+#+end_src
+
+** Inline $$LaTeX$$ and Images
+
+#+begin_src emacs-lisp
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+#+end_src
+
+Render images in emacs with <width>. If <width> is "nil", then use "#+attr_latex: :width <number>" if specified, and if not, then just use the actual image width.
+
+#+begin_src emacs-lisp
+  (setq org-image-actual-width 450)
+#+end_src
+
+** Org-Babel
+
+Don't ask before evaluating code blocks.
+
+#+begin_src emacs-lisp
+  (setq org-confirm-babel-evaluate nil)
+#+end_src
+
+Enable org-babel evaluation in different languages
+
+#+begin_src emacs-lisp
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((python . t)))
+
+  (org-babel-do-load-languages
+   'org-babel-load-languages '((C . t)))
+#+end_src
+
+** Source code blocks
+
+Enables the "<s TAB" code snippet for #+begin_src
+#+begin_src emacs-lisp
+  (require 'org-tempo)
+#+end_src
+
+Quickly insert a block of elisp (usefull for this config file):
+
+#+begin_src emacs-lisp
+  (add-to-list 'org-structure-template-alist
+               '("el" . "src emacs-lisp"))
+#+end_src
+
+Quickly insert a block of C (off because <c interferes with #+begin_center)
+
+#+begin_src OFF
+  (add-to-list 'org-structure-template-alist
+               '("c" . "src c"))
+#+end_src
+
+Quickly insert a block of C++:
+
+#+begin_src OFF
+  (add-to-list 'org-structure-template-alist
+               '("cpp" . "src cpp"))
+#+end_src
+
+** Exporting
+*** Exporting
+
+Translate regular ol' straight quotes to typographically-correct curly quotes
+when exporting.
+
+#+begin_src emacs-lisp
+  (setq org-export-with-smart-quotes t)
+#+end_src
+
+*** $LaTeX$
+
+Save, compile, open in pdf viewer:
+
+#+begin_src emacs-lisp
+  (defun my-compile-org-to-latex-pdf-and-open ()
+    (interactive)
+    (save-buffer)
+    (org-open-file (org-latex-export-to-pdf)))
+
+  (define-key org-mode-map (kbd "<f6>") 'my-compile-org-to-latex-pdf-and-open)
+
+#+end_src
+
+Put page break after table of contents.
+
+#+begin_src emacs-lisp
+  (setq org-latex-toc-command "\\tableofcontents \\clearpage")
+#+end_src
+
+* UI
+** Theme
+*** Solarized
+
+#+begin_src emacs-lisp
+  (use-package solarized-theme)
+
+  ;(load-theme 'solarized-light t)
+  (load-theme 'solarized-dark t)
+
+#+end_src
+
+*** VS code dark+
+
+#+begin_src OFF
+  (use-package vscode-dark-plus-theme
+    :ensure t
+    :config
+    (load-theme 'vscode-dark-plus t))
+  ; Remove the border around the TODO word on org-mode files
+  (setq vscode-dark-plus-box-org-todo nil)
+#+end_src
+
+**** 
+#+begin_src OFF
+  (use-package doom-themes
+    :ensure t
+    :config
+    ;; Global settings (defaults)
+    (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+          doom-themes-enable-italic t) ; if nil, italics is universally disabled
+    (load-theme 'doom-one t)
+
+    ;; Enable flashing mode-line on errors
+    (doom-themes-visual-bell-config)
+    ;; Enable custom neotree theme (all-the-icons must be installed!)
+    (doom-themes-neotree-config)
+    ;; or for treemacs users
+    (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+    (doom-themes-treemacs-config)
+    ;; Corrects (and improves) org-mode's native fontification.
+    (doom-themes-org-config))
+#+end_src
+
+** Use =minions= to hide all minor modes
+
+I never want to see a minor mode, and manually adding =:diminish= to every
+use-package declaration is a hassle. This uses =minions= to hide all the minor
+modes in the modeline. Nice!
+
+By default there's a =;-)= after the major mode; that's an adorable default, but
+I'd rather skip it.
+
+#+begin_src emacs-lisp
+   (use-package minions
+     :config
+     (setq minions-mode-line-lighter ""
+           minions-mode-line-delimiters '("" . ""))
+     (minions-mode 1))
+#+end_src
+
+** show lines and column on the modeline
+
+#+begin_src emacs-lisp
+  (line-number-mode 1)
+  (column-number-mode 1)
+#+end_src
+
+** auto brackets (electric)
+#+begin_src OFF
+  (setq electric-pair-pairs '(
+			 (?\( . ?\))
+			 (?\[ . ?\])
+			 ))
+  (electric-pair-mode t)
+#+end_src
+
+#+begin_src emacs-lisp
+  ; disable starting screen
+  (setq inhibit-startup-message t)
+
+#+end_src
+
+** Other small stuff
+
+#+begin_src emacs-lisp
+  (scroll-bar-mode -1) ; Disable visible scrollbar
+  (tool-bar-mode -1) ; Disable the toolbar
+  ;(tooltip-mode -1) ; Disable tooltips
+  ;(set-fringe-mode 10) ; TODO Give some breathing room
+  (menu-bar-mode -1) ; Disable menu bar
+
+  ;(setq visible-bell t) ; Set up the visible bell
+
+  ; Stop cursor blinking
+  (blink-cursor-mode 0)
+
+  ; Try typing lambda (not in a comment)
+  ;(global-prettify-symbols-mode t)
+
+  ; Highlights current line
+  ;(global-hl-line-mode t)
+
+  ; Indentation (TODO: pogledaj sve ovo, uzeto iz witchmacs)
+  ;(setq-default tab-width 4)
+  ;(setq-default standard-indent 4)
+  ;(setq c-basic-offset tab-width)
+  ;(setq-default electric-indent-inhibit t)
+  ;(setq-default indent-tabs-mode t)
+  ;(setq backward-delete-char-untabify-method 'nil)
+
+  ;TODO: idk
+  ;(global-prettify-symbols-mode t)
+#+end_src
+
+** rainbow
+*** Shows colors in emacs when viewing hexadecimal colors. e.g. #FF6933
+#+begin_src emacs-lisp
+  (use-package rainbow-mode
+      :ensure t
+      :init (rainbow-mode 1))
+#+end_src
+
+*** colors brackets in pairs
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    :init
+    (rainbow-delimiters-mode 1))
+#+end_src 
+
+* Programming environments
+** Python
+
+#+begin_src emacs-lisp
+  (use-package python-mode)
+
+  ; Elpy enables automatic indentation, auto-completion, syntax checking, etc.
+
+  (use-package elpy
+    :ensure t)
+  (elpy-enable)
+
+  ; Use flycheck for syntax checking
+
+  (add-hook 'elpy-mode-hook 'flycheck-mode)
+
+#+end_src
+
+*** Not used
+
+#+begin_src OFF
+  (use-package python-mode)
+#+end_src
+
+Add =~/.local/bin= to load path. That's where =virtualenv= is installed, and
+we'll need that for =jedi=.
+
+#+begin_src OFF
+  (hrs/append-to-path "~/.local/bin")
+#+end_src
+
+Enable =elpy=. This provides automatic indentation, auto-completion, syntax
+checking, etc.
+
+#+begin_src OFF
+  (use-package elpy)
+  (elpy-enable)
+#+end_src
+
+Use =flycheck= for syntax checking:
+
+#+begin_src OFF
+  (add-hook 'elpy-mode-hook 'flycheck-mode)
+#+end_src
+
+Format code according to PEP8 on save:
+
+#+begin_src OFF
+  (use-package py-autopep8)
+  (require 'py-autopep8)
+  (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+#+end_src
+
+Configure Jedi along with the associated =company= mode:
+
+#+begin_src OFF
+  (use-package company-jedi)
+  (add-to-list 'company-backends 'company-jedi)
+
+  (add-hook 'python-mode-hook 'jedi:setup)
+  (setq jedi:complete-on-dot t)
+#+end_src
+
+** =sh=
+
+Indent with 2 spaces.
+
+#+begin_src emacs-lisp
+  (add-hook 'sh-mode-hook
+            (lambda ()
+              (setq sh-basic-offset 2
+                    sh-indentation 2)))
+#+end_src
+
+* dashboard
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :ensure t
+    :config
+    (dashboard-setup-startup-hook)
+    (setq dashboard-items '((recents . 10))) ; optional
+    (setq dashboard-banner-logo-title "Stecks"))
+#+end_src
+
+
+* Spell sheck TODO
+
+#+begin_src emacs-lisp
+  (setq auto-window-vscroll nil)
+#+end_src
+
+#+begin_src emacs-lisp
+
+  (setq ispell-program-name "hunspell") ; Use hunspell (hunspell binary needs to be in PATH environment path)(instead of the default "ispell")
+
+  (setq ispell-dictionary "sr-Latn")      ; Latinica
+  ;(setq ispell-dictionary "sr")           ; Cirilica
+  ;(setq ispell-dictionary "en_US")
+
+#+end_src
+
+Enable spellcheck (flyspell-mode) in text files
+
+#+begin_src OFF
+  (dolist (hook '(text-mode-hook))
+    (add-hook hook (lambda () (flyspell-mode 1))))
+#+end_src
+
+* Completion, search...
+
+Ivy, counsel, swiper
+
+#+begin_src emacs-lisp
+
+  (use-package ivy
+    :ensure t
+    :init)
+
+  (use-package swiper
+    :ensure t
+    :init)
+
+  (use-package counsel
+    :ensure t
+    :init)
+
+
+  (ivy-mode 1)
+
+  (setq ivy-use-virtual-buffers t)
+  (setq enable-recursive-minibuffers t)
+  ;; enable this if you want `swiper' to use it
+  ;; (setq search-default-mode #'char-fold-to-regexp)
+  (global-set-key "\C-s" 'swiper)
+  (global-set-key (kbd "C-c C-r") 'ivy-resume)
+  (global-set-key (kbd "<f6>") 'ivy-resume)
+  (global-set-key (kbd "M-x") 'counsel-M-x)
+  (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+  (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+  (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+  (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
+  (global-set-key (kbd "<f1> l") 'counsel-find-library)
+  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+  (global-set-key (kbd "C-c g") 'counsel-git)
+  (global-set-key (kbd "C-c j") 'counsel-git-grep)
+  (global-set-key (kbd "C-c k") 'counsel-ag)
+  (global-set-key (kbd "C-x l") 'counsel-locate)
+  (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+  (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
+#+end_src
+
+** Enable ido mode
+#+begin_src OFF
+  (setq ido-enable-flex-matching nil)
+  (setq ido-create-new-buffer 'always)
+  (setq ido-everywhere t)
+  (ido-mode 1)
+#+end_src
+** ido vertical
+#+begin_src OFF
+  (use-package ido-vertical-mode
+    :ensure t
+    :init
+    (ido-vertical-mode 1))
+  (setq ido-vertical-define-keys 'C-n-and-C-p-only) ; You can cycle through completions with C-n and C-p
+#+end_src   
+** smex
+#+begin_src OFF
+  (use-package smex
+    :ensure t
+    :init (smex-initialize)
+    :bind
+    ("M-x" . smex))
+#+end_src
+
+** switch buffer
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-x C-b") 'ido-switch-buffer)
+#+end_src
+
+
+* Which-key
+  This plugin/package shows you the /key bindings/chords/ when you start typing some but you don't finish (you have to wait a little bit). e.g. C-x
+#+begin_src emacs-lisp
+; install which key
+(use-package which-key
+  :ensure t
+  :init
+  (which-key-mode))
+#+end_src
+
+* modeline
+** spaceline (TODO: pick better line that
+
+#+begin_src OFF
+  (use-package spaceline
+    :ensure t
+    :config
+    (require 'spaceline-config)
+    (spaceline-spacemacs-theme))
+#+end_src
+
+* sudo edit
+#+begin_src emacs-lisp
+  (use-package sudo-edit
+    :ensure t
+    :bind ("C-x r" . sudo-edit)) ; r = root TODO, bolji keybind?
+#+end_src
+* Terminal
+#+begin_src emacs-lisp
+  (defvar my-term-shell "/bin/zsh")
+  (defadvice ansi-term (before force-bash)
+    (interactive (list my-term-shell)))
+  (ad-activate 'ansi-term)
+
+
+  ; TODO: global-set-key, vidi zasto ne radi, ova sama komanda i nije toliko bitna
+  ;(global-set-key (kbd "<C-return>") 'ansi-term)
+  (global-set-key (kbd "<C-return>") 'eval-buffer)
+
+#+end_src
+
+* config.org edit/reload
+
+  Edit
+
+#+begin_src emacs-lisp
+  (defun config-visit ()
+    (interactive)
+    (find-file "~/.config/emacs/config.org"))
+  (global-set-key (kbd "C-c e") 'config-visit)
+#+end_src
+
+Reload
+
+#+begin_src emacs-lisp
+  (defun config-reload ()
+    (interactive)
+    (org-babel-load-file (expand-file-name "~/.config/emacs/config.org")))
+  (global-set-key (kbd "C-c r") 'config-reload)
+#+end_src
+
+* Arhiv
+** Convenient functions
+*** TODO not working
+
+#+begin_src OFF
+   (defun org-toggle-emphasis ()
+     "Toggle hiding/showing of org emphasize markers."
+     (interactive)
+     (if org-hide-emphasis-markers
+       (set-variable 'org-hide-emphasis-markers nil)
+       (set-variable 'org-hide-emphasis-markers t)
+       (org-mode-restart)))
+   (define-key org-mode-map (kbd "C-c s") 'org-toggle-emphasis)
+#+end_src
+
+** yasnippet
+
+Enable yasnippet
+
+#+begin_src OFF
+  (use-package yasnippet
+    :ensure t)
+#+end_src
+
+I keep my snippets in =.config/emacs/snippets=, and I always want =yasnippet= enabled.
+
+#+begin_src OFF
+  (setq yas-snippet-dirs '("~/.config/emacs/snippets"))
+  (yas-global-mode 1)
+#+end_src
+
+Disable yasnippet auto indentation.
+
+#+begin_src OFF
+  (setq yas-indent-line 'auto)
+#+end_src
+
+** srpski keymap
+#+begin_src OFF
+  (define-key evil-normal-state-map "х" 'evil-shift-left)
+  (define-key evil-normal-state-map "ј" 'evil-insert)
+  (define-key evil-normal-state-map "к" 'evil-insert)
+  (define-key evil-normal-state-map "л" 'evil-insert)
+  (define-key evil-normal-state-map "" 'evil-insert)
+  (define-key evil-normal-state-map "" 'evil-insert)
+  (define-key evil-normal-state-map "" 'evil-insert)
+  (define-key evil-normal-state-map "" 'evil-insert)
+  (define-key evil-normal-state-map "и" 'evil-insert)
+#+end_src
+
+
+#+begin_src OFF
+  (defun org-export-translate-to-lang (term-translations &optional lang)
+    "Adds desired translations to `org-export-dictionary'.
+     TERM-TRANSLATIONS is alist consisted of term you want to translate
+     and its corresponding translation, first as :default then as :html and
+     :utf-8. LANG is language you want to translate to."
+    (dolist (term-translation term-translations)
+      (let* ((term (car term-translation))
+             (translation-default (nth 1 term-translation))
+             (translation-html (nth 2 term-translation))
+             (translation-utf-8 (nth 3 term-translation))
+             (term-list (assoc term org-export-dictionary))
+             (term-langs (cdr term-list)))
+        (setcdr term-list (append term-langs
+                                  (list
+                                   (list lang
+                                         :default translation-default
+                                         :html translation-html
+                                         :utf-8 translation-utf-8)))))))
+  
+  (org-export-translate-to-lang '(("Table of Contents"
+                                   "Sadržaj"
+                                   "Sadr&#382;aj"
+                                   "Sadržaj")
+                                  ("Another term"
+                                   "coilogji"))
+                                "sr")
+#+end_src
+** OFF, or I don't know 
+*** window splitting functions (OFF, idk what it does)
+Idk what this stuff is, someting related to the last option thing (switch-window). Idk what either of them do entirely.
+#+begin_src OFF
+   (defun split-and-follow-horizontally ()
+     (interactive)
+     (split-window-below)
+     (balanca-windows)
+     (other-window 1))
+   (global-key-set (kbd "C-x 2") 'split-and-follow-horizontally)
+ 
+   (defun split-and-follow-vertically ()
+     (interactive)
+     (split-window-right)
+     (balanca-windows)
+     (other-window 1))
+   (global-key-set (kbd "C-x 3") 'split-and-follow-vertically)
+
+#+end_src
+*** switch-window (OFF, idk what it does)
+
+#+begin_src OFF
+   (use-package switch-window
+     :ensure t
+     :config
+     (setq switch-window-input-style 'minibuffer)
+     (setq switch-window-increase 4)
+     (setq switch-window-threshold 2)
+     (setq switch-window-shortcut-style 'qwery) ; optional, TODO?
+     (setq switch-window-qwerty-shortcuts ; goes with last option
+    '("a" "s" "d" "f" "j" "k" "l")) ; TODO C-o ne radi jer koristim evil mode
+     :bind ; TODO, ono "a" "s" "d"... i te stvari ne rade, nego mi ispisuje brojeve umesto toga
+     ([remap other-window] . switch-window))
+#+end_src
+  
+*** Beacon (OFF, not using it)
+#+begin_src OFF
+   Package that shows your cursor position on new buffer
+  (use-package beacon
+    :ensure t
+    :init
+    (beacon-mode 1))
+
+#+end_src 
+*** buffers (evil mode incompatable??)
+  Uncle dave, meh msm da ne radi sa evil mode-om, a i mogu samo koristiti file exporer.
+#+begin_src OFF
+  (global-set-key (kbd "C-x b") `ibuffer)
+#+end_src
+
+*** avi (not using it)
+#+begin_src OFF
+  (use-package avy
+    :ensure t
+    :bind
+    ("M-s" . avy-goto-char))
+#+end_src
+*** non evil mode stuff (OFF)
+*** kill whole word (OFF, i'm using evil mode, so no need for this)
+ #+begin_src OFF
+   (defun kill-whole-word ()
+     (interactive)
+     (backward-ward)
+     (kill-word 1))
+   (global-set-key (kbd "C-c w w") 'kill-whole-word)
+ #+end_src
+  Good plugins: hungry-delete
+*** copy whole line (OFF)
+#+begin_src OFF
+   (defun copy-whole-line ()
+     (interactive)
+     (save-excursion
+ (kill-new
+  (buffer-substring
+   (point-atbol)
+   (point-at-eol)))))
+   (global-set-key (kbd "C-c w ]") 'copy-whole-line)
+#+end_src
+*** autocomplete (OFF)
+ Currenlty using /company/, /auto-completion/ is probably better.
+#+begin_src OFF
+  (use-package company
+    :ensure t
+    :init
+    (add-hook 'after-init-hook 'global-company-mode))
+#+end_src

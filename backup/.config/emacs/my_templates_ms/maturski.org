@@ -1,0 +1,18 @@
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [12pt, a4paper, oneside]
+#+LATEX_HEADER: \usepackage[a4paper, left=1.925cm, right=1.925cm, bottom=2.54cm, top=2.54cm]{geometry}
+#+LATEX_HEADER: \usepackage{mathptmx}
+#+LATEX_HEADER: \usepackage{physics}
+#+LATEX_HEADER: \usepackage{amsmath}
+
+#+LATEX_HEADER: \usepackage{fancyhdr}
+#+LATEX_HEADER: \fancyhf{}
+#+LATEX_HEADER: \rhead{Ласери и њихова примена}
+#+LATEX_HEADER: \lhead{Милош Стојко}
+#+LATEX_HEADER: \rfoot{\thepage}
+#+LATEX_HEADER: \pagestyle{empty}
+
+#+LATEX_HEADER: \setlength{\parindent}{1cm}
+#+LATEX_HEADER: \setlength{\parskip}{0.1cm}
+
+#+OPTIONS: toc:nil title:nil author:nil date:nil
