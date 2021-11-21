@@ -12,9 +12,14 @@ elif [ $1 == "sync" ]
 then
     #~/.scripts/rclonesync --verbose --check-acces $MY_SYNC_REMOTE:/sync ~/sync
     ~/.scripts/rclonesync --verbose $MY_SYNC_REMOTE:/sync ~/sync
+elif [ $1 == "init" ]
+then
+    mkdir ~/sync
+    ~/.scripts/rclonesync --first-sync --verbose db:/sync ~/sync/
 else
     printf "ERROR: Argument not recognized (see ~/.scripts/rclonesync)"
     exit 1
 fi
+
 
 exit 0
